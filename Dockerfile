@@ -56,7 +56,11 @@ RUN --mount=type=cache,target=/tmp \
         mysqli \
         zip \
     # Install Imagick
-    && curl -L -o /tmp/imagick.tar.gz https://github.com/Imagick/imagick/archive/tags/${IMAGICK_VERSION}.tar.gz \
+    && if command -v wget >/dev/null 2>&1; then \
+      wget -q -O /tmp/imagick.tar.gz https://github.com/Imagick/imagick/archive/tags/${IMAGICK_VERSION}.tar.gz; \
+    else \
+      curl -L -o /tmp/imagick.tar.gz https://github.com/Imagick/imagick/archive/tags/${IMAGICK_VERSION}.tar.gz; \
+    fi \
     && tar --strip-components=1 -xf /tmp/imagick.tar.gz \
     && sed -i 's/php_strtolower/zend_str_tolower/g' imagick.c \
     && phpize \
@@ -69,7 +73,11 @@ RUN --mount=type=cache,target=/tmp \
     && docker-php-ext-enable redis mysqli pdo_mysql
 
 # Install WP-CLI
-RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+RUN if command -v wget >/dev/null 2>&1; then \
+      wget -q -O /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar; \
+    else \
+      curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar; \
+    fi \
     && chmod +x /usr/local/bin/wp
 
 # Clean up build dependencies

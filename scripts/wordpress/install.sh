@@ -82,10 +82,13 @@ function wordpress_config() {
   echo "Fetching WordPress salts..."
 
   while [ $retries -lt $MAX_RETRIES ] && [ "$success" = false ]; do
-        # Try to fetch salts using curl
-        wp_salts=$(curl -s -f "$SALT_URL")
-        
-        # Check if curl was successful and we got content
+        # Try to fetch salts using wget if available, otherwise curl
+        if command -v wget &>/dev/null; then
+            wp_salts=$(wget -qO - "$SALT_URL")
+        else
+            wp_salts=$(curl -s -f "$SALT_URL")
+        fi
+
         if [ $? -eq 0 ] && [ ! -z "$wp_salts" ]; then
             success=true
             echo "Successfully fetched WordPress salts"
@@ -96,8 +99,6 @@ function wordpress_config() {
                 sleep $RETRY_DELAY
             else
                 echo "Error: Failed to fetch WordPress salts after $MAX_RETRIES attempts"
-                
-                # Provide fallback random salts if the API fails
                 wp_salts=$(generate_fallback_salts)
                 echo "Generated fallback salts"
                 success=true
