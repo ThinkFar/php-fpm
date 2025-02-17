@@ -123,6 +123,7 @@ RUN mkdir -p /var/run/php-fpm "${LOG_PREFIX}" \
 
 # Copy configuration files and scripts
 COPY --chmod=755 docker-entrypoint.sh /docker-entrypoint.sh
+RUN mkdir -p /usr/src/plugins/
 COPY --chmod=755 scripts/ /usr/src/plugins/
 
 # Ensure www-data is the working user and owns the necessary directories
