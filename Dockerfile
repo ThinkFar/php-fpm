@@ -137,7 +137,6 @@ COPY --chmod=755 scripts/ /usr/src/plugins/
 # Ensure www-data is the working user and owns the necessary directories
 RUN set -ex \
     && id -u www-data || adduser -u 82 -D -S -G www-data www-data \
-    && mkdir -p /var/www/html \
     && chown -R www-data:www-data /var/www/html
 
 EXPOSE 9000
