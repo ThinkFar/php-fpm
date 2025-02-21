@@ -23,6 +23,11 @@ function wordpress_install() {
   mkdir -p "${APP_DOCROOT}"
   cd "${APP_DOCROOT}" || exit
 
+  # Download wp-cli
+  curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+  chmod +x wp-cli.phar
+  mv wp-cli.phar /usr/bin/wp
+
   # Download the WordPress core files
   wp --allow-root core download --version="${WORDPRESS_VERSION}" --path="${APP_DOCROOT}"
 
@@ -106,6 +111,8 @@ function wordpress_config() {
         fi
   done
 
+  echo "$wp_salts"
+
   cd "${APP_DOCROOT}" || exit
 
   # Create wp-config.php file
@@ -118,6 +125,15 @@ define('DB_PASSWORD', '${WORDPRESS_DB_PASSWORD}');
 define('DB_HOST', '${WORDPRESS_DB_HOST}');
 define('DB_CHARSET', 'utf8');
 define('DB_COLLATE', '');
+
+// Performance
+define('WP_CACHE', true); 
+define('WP_MEMORY_LIMIT', '3072M'); 
+define('WP_MAX_MEMORY_LIMIT', '4096M'); 
+define('CONCATENATE_SCRIPTS', true);
+define('AUTOSAVE_INTERVAL', 600); 
+define('WP_POST_REVISIONS', 10);
+define('WP_REDIS_DISABLED', false);
 
 // Insert the salts directly
 $wp_salts
@@ -153,25 +169,46 @@ require_once(ABSPATH . 'wp-settings.php');
 EOF
 
   # Configure the site with wp-cli
+  echo "================================================================="
+  echo "Installing WordPress Core..."
+  echo "================================================================="
   wp --allow-root --path="${APP_DOCROOT}" core install --url="https://${NGINX_SERVER_NAME}" \
     --title="${NGINX_SERVER_NAME}" --admin_user="${WORDPRESS_ADMIN}" \
     --admin_password="${WORDPRESS_ADMIN_PASSWORD}" \
     --admin_email="${WORDPRESS_ADMIN_EMAIL}"
 
+  echo "================================================================="
+  echo "Setting WordPress User..."
+  echo "================================================================="
   wp --allow-root --path="${APP_DOCROOT}" user update "${WORDPRESS_ADMIN}" \
     --user_pass="${WORDPRESS_ADMIN_PASSWORD}" --allow-root
 
   # Delete default plugins
+  echo "================================================================="
+  echo "Deleting WordPress Default Plugins..."
+  echo "================================================================="
   wp --allow-root --path="${APP_DOCROOT}" plugin delete akismet hello
 
   # Set permalink structure
+  echo "================================================================="
+  echo "Setting WordPress Permalink Structure to postname..."
+  echo "================================================================="
   wp --allow-root --path="${APP_DOCROOT}" rewrite structure '/%postname%/' --hard
 
   # Install and activate plugins
+  echo "================================================================="
+  echo "Installing and Activating WordPress Plugins: namp, antispam-bee, nginx-helper, wp-mail-smtp, redis-cache"
+  echo "================================================================="
   wp --allow-root --path="${APP_DOCROOT}" plugin install amp antispam-bee nginx-helper wp-mail-smtp redis-cache --activate
 
   # Copy object cache file if it exists
+  echo "================================================================="
+  echo "Copying Object Cache File... Only if the plguin redis-cache is installed and the file object-cache.php inside the redis-chache plugins' 'includes' folder exists."
+  echo "================================================================="
   if [[ -f ${APP_DOCROOT}/wp-content/plugins/redis-cache/includes/object-cache.php ]]; then
+    echo "================================================================="
+    echo "The file exists and the object-cache.php file is being copied to the wp-content folder."
+    echo "================================================================="
     cp "${APP_DOCROOT}/wp-content/plugins/redis-cache/includes/object-cache.php" \
       "${APP_DOCROOT}/wp-content/"
   fi
@@ -187,6 +224,26 @@ EOF
 }
 
 #######################################
+# Configures SSL for WordPress
+# Globals:
+#   NGINX_SERVER_NAME
+#   APP_DOCROOT
+# Arguments:
+#   None
+#######################################
+function wordpress_ssl() {
+  # We need to invoke the page prior to including the SSL connection information
+  curl -v -k "https://${NGINX_SERVER_NAME}/wp-login.php"
+
+  # Add SSL connection to config
+  sed -i "/\/\* That's all, stop editing! Happy publishing. \*\//i \
+define('FORCE_SSL_ADMIN', true); \n\
+if (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && \$_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') { \n\
+    \$_SERVER['HTTPS'] = 'on'; \n\
+}" "${APP_DOCROOT}/wp-config.php"
+}
+
+#######################################
 # Cleans up after installation
 # Globals:
 #   APP_DOCROOT
@@ -199,6 +256,8 @@ function cleanup() {
   find "${APP_DOCROOT}" -type d ! -perm 755 -exec chmod 755 {} \;
   find "${APP_DOCROOT}" -type f ! -perm 644 -exec chmod 644 {} \;
 
+  # Clear cache
+  rm -rf /var/cache/*
 }
 
 #######################################
@@ -212,6 +271,7 @@ function run() {
   if [[ ! -f ${APP_DOCROOT}/wp-config.php ]]; then
     wordpress_install
     wordpress_config
+    wordpress_ssl
     cleanup
   else
     echo "OK: Wordpress already seems to be installed."
