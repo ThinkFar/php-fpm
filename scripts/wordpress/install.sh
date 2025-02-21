@@ -169,59 +169,87 @@ require_once(ABSPATH . 'wp-settings.php');
 EOF
 
   # Configure the site with wp-cli
-  echo "================================================================="
-  echo "Installing WordPress Core..."
-  echo "install.sh - NOT wp-install-script-app.sh"
-  echo "================================================================="
+  echo -e "\n\033[1;34m=================================================================\033[0m"
+  echo -e "\033[1;32mInstalling WordPress Core...\033[0m"
+  echo -e "\033[1;33minstall.sh - NOT wp-install-script-app.sh\033[0m"
+  echo -e "\033[1;34m=================================================================\033[0m\n"
+
   wp --allow-root --path="${APP_DOCROOT}" core install --url="https://${NGINX_SERVER_NAME}" \
     --title="${NGINX_SERVER_NAME}" --admin_user="${WORDPRESS_ADMIN}" \
     --admin_password="${WORDPRESS_ADMIN_PASSWORD}" \
     --admin_email="${WORDPRESS_ADMIN_EMAIL}"
 
-  echo "================================================================="
-  echo "Setting WordPress User..."
-  echo "================================================================="
+  echo -e "\n\033[1;34m=================================================================\033[0m"
+  echo -e "\033[1;32mSetting WordPress User...\033[0m"
+  echo -e "\033[1;34m=================================================================\033[0m\n"
+
   wp --allow-root --path="${APP_DOCROOT}" user update "${WORDPRESS_ADMIN}" \
     --user_pass="${WORDPRESS_ADMIN_PASSWORD}" --allow-root
 
-  # Delete default plugins
-  echo "================================================================="
-  echo "Deleting WordPress Default Plugins..."
-  echo "================================================================="
-  wp --allow-root --path="${APP_DOCROOT}" plugin delete akismet hello
+  echo -e "\n\033[1;34m=================================================================\033[0m"
+  echo -e "\033[1;32mDeleting WordPress Default Plugins...\033[0m"
+  echo -e "\033[1;34m=================================================================\033[0m\n"
 
-  # Set permalink structure
-  echo "================================================================="
-  echo "Setting WordPress Permalink Structure to postname..."
-  echo "================================================================="
+  wp --allow-root --path="${APP_DOCROOT}" plugin delete akismet hello
+  
+  echo -e "\n\033[1;34m=================================================================\033[0m"
+  echo -e "\033[1;32mDeleting WordPress Default Themes...\033[0m"
+  echo -e "\033[1;34m=================================================================\033[0m\n"
+  
+  wp --allow-root --path="${APP_DOCROOT}" theme delete twentytwentythree twentytwentyfour
+
+  echo -e "\n\033[1;34m=================================================================\033[0m"
+  echo -e "\033[1;32mSetting WordPress Permalink Structure to postname...\033[0m"
+  echo -e "\033[1;34m=================================================================\033[0m\n"
+
   wp --allow-root --path="${APP_DOCROOT}" rewrite structure '/%postname%/' --hard
 
-  # Install and activate plugins
-  echo "================================================================="
-  echo "Installing and Activating WordPress Plugins - namp, antispam-bee, nginx-helper, wp-mail-smtp, redis-cache"
-  echo "================================================================="
+  echo -e "\n\033[1;34m=================================================================\033[0m"
+  echo -e "\033[1;32mSetting WordPress Media Settings...\033[0m"
+  echo -e "\033[1;34m=================================================================\033[0m\n"
+  
+  wp --allow-root --path="${APP_DOCROOT}" option update thumbnail_crop 0
+  wp --allow-root --path="${APP_DOCROOT}" option update thumbnail_size_w 160
+  wp --allow-root --path="${APP_DOCROOT}" option update thumbnail_size_h 90
+  wp option update medium_size_w 640
+  wp option update medium_size_h 360
+  wp option update large_size_w 1280
+  wp option update large_size_h 720
+  wp media regenerate
+
+  echo -e "\n\033[1;34m=================================================================\033[0m"
+  echo -e "\033[1;32mInstalling and Activating WordPress Plugins:\033[0m"
+  echo -e "\033[1;33mamp, antispam-bee, nginx-helper, wp-mail-smtp, redis-cache\033[0m"
+  echo -e "\033[1;34m=================================================================\033[0m\n"
+  
   wp --allow-root --path="${APP_DOCROOT}" plugin install amp antispam-bee nginx-helper wp-mail-smtp redis-cache --activate
 
-  # Copy object cache file if it exists
-  echo "================================================================="
-  echo "Copying Object Cache File... Only if the plguin redis-cache is installed and the file object-cache.php inside the redis-chache plugins includes folder exists."
-  echo "================================================================="
+  echo -e "\n\033[1;34m=================================================================\033[0m"
+  echo -e "\033[1;32mCopying Object Cache File...\033[0m"
+  echo -e "\033[1;33mOnly if the redis-cache plugin is installed and the file object-cache.php exists\033[0m"
+  echo -e "\033[1;34m=================================================================\033[0m\n"
+
   if [[ -f ${APP_DOCROOT}/wp-content/plugins/redis-cache/includes/object-cache.php ]]; then
-    echo "================================================================="
-    echo "The file exists and the object-cache.php file is being copied to the wp-content folder."
-    echo "================================================================="
+    echo -e "\n\033[1;32mThe object-cache.php file exists. Copying to wp-content folder...\033[0m\n"
+
     cp "${APP_DOCROOT}/wp-content/plugins/redis-cache/includes/object-cache.php" \
       "${APP_DOCROOT}/wp-content/"
+  else
+    echo -e "\n\033[1;31mobject-cache.php not found. Skipping file copy.\033[0m\n"
   fi
 
-  echo "================================================================="
-  echo "Installation is complete. Your username/password is listed below."
-  echo ""
-  echo "Username: ${WORDPRESS_ADMIN}"
-  echo "Password: ${WORDPRESS_ADMIN_PASSWORD}"
-  echo ""
-  echo "================================================================="
+  echo -e "\n\033[1;34m=================================================================\033[0m"
+  echo -e "\033[1;32mInstallation is complete. Your credentials are listed below.\033[0m"
+  echo -e "\033[1;34m=================================================================\033[0m\n"
+  
+  echo -e "\033[1;33mUsername: ${WORDPRESS_ADMIN}\033[0m"
+  echo -e "\033[1;33mPassword: ${WORDPRESS_ADMIN_PASSWORD}\033[0m\n"
+
+  echo -e "\033[1;34m=================================================================\033[0m\n\n\n"
+
   echo "Username: ${WORDPRESS_ADMIN} | Password: ${WORDPRESS_ADMIN_PASSWORD}" > /home/creds.txt
+
+  echo -e "\033[1;34m=================================================================\033[0m\n\n\n"
 }
 
 #######################################
