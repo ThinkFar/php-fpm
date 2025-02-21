@@ -184,7 +184,7 @@ EOF
   echo -e "\033[1;34m=================================================================\033[0m\n"
 
   wp --allow-root --path="${APP_DOCROOT}" user update "${WORDPRESS_ADMIN}" \
-    --user_pass="${WORDPRESS_ADMIN_PASSWORD}" --allow-root
+    --user_pass="${WORDPRESS_ADMIN_PASSWORD}"
 
   echo -e "\n\033[1;34m=================================================================\033[0m"
   echo -e "\033[1;32mDeleting WordPress Default Plugins...\033[0m"
@@ -209,13 +209,13 @@ EOF
   echo -e "\033[1;34m=================================================================\033[0m\n"
   
   wp --allow-root --path="${APP_DOCROOT}" option update thumbnail_crop 0
-  wp --allow-root --path="${APP_DOCROOT}" option update thumbnail_size_w 160
-  wp --allow-root --path="${APP_DOCROOT}" option update thumbnail_size_h 90
-  wp option update medium_size_w 640
-  wp option update medium_size_h 360
-  wp option update large_size_w 1280
-  wp option update large_size_h 720
-  wp media regenerate
+  wp --allow-root --path="${APP_DOCROOT}" option update thumbnail_size_w 640
+  wp --allow-root --path="${APP_DOCROOT}" option update thumbnail_size_h 360
+  wp --allow-root --path="${APP_DOCROOT}" option update medium_size_w 1280
+  wp --allow-root --path="${APP_DOCROOT}" option update medium_size_h 720
+  wp --allow-root --path="${APP_DOCROOT}" option update large_size_w 1920
+  wp --allow-root --path="${APP_DOCROOT}" option update large_size_h 1080
+  wp --allow-root --path="${APP_DOCROOT}" media regenerate --yes
 
   echo -e "\n\033[1;34m=================================================================\033[0m"
   echo -e "\033[1;32mInstalling and Activating WordPress Plugins:\033[0m"
