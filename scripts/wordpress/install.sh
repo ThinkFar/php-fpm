@@ -155,10 +155,10 @@ if (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && \$_SERVER['HTTP_X_FORWARDED_PR
 define('FORCE_SSL_ADMIN', true);
 define('DISALLOW_FILE_EDIT', false);
 define('RT_WP_NGINX_HELPER_CACHE_PATH', '/var/cache');
-define('WP_REDIS_HOST', '$REDIS_UPSTREAM_HOST');
-define('WP_REDIS_PORT', $REDIS_UPSTREAM_PORT);                       // Ensure port is defined
-define('WP_REDIS_DATABASE', 1);                      // Optional: Specify Redis database
-define('WP_REDIS_PREFIX', 'wp_cache:');              // Optional: Define a prefix to prevent key collisions
+define('WP_REDIS_HOST', '${REDIS_UPSTREAM_HOST:-redis}');           // Specify Redis host
+define('WP_REDIS_PORT', ${REDIS_UPSTREAM_PORT:-6379});              // Ensure port is defined
+define('WP_REDIS_DATABASE', 1);                                     // Optional: Specify Redis database
+define('WP_REDIS_PREFIX', 'wp_cache:');                             // Optional: Define a prefix to prevent key collisions
 define('FS_METHOD', 'direct');
 
 if (!defined('ABSPATH')) {

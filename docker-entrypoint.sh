@@ -7,9 +7,9 @@ set -euo pipefail
 # Globals and Default Values
 : "${PHP_MAX_EXECUTION_TIME:=300}"
 : "${PHP_FPM_CONF_DIR:=/usr/local/etc}"
-: "${PHP_MEMORY_LIMIT:=1024}"  # Changed default to 1024M
-: "${PHP_POST_MAX_SIZE:=50}"
-: "${PHP_UPLOAD_MAX_FILESIZE:=50}"
+: "${PHP_MEMORY_LIMIT:=1024}"
+: "${PHP_POST_MAX_SIZE:=1024}"
+: "${PHP_UPLOAD_MAX_FILESIZE:=4096}"
 : "${PHP_OPCACHE_ENABLE:=1}"
 : "${PHP_FPM_UPSTREAM_PORT:=9000}"
 : "${REDIS_UPSTREAM_HOST:=redis}"
