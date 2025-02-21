@@ -197,13 +197,13 @@ EOF
 
   # Install and activate plugins
   echo "================================================================="
-  echo "Installing and Activating WordPress Plugins: namp, antispam-bee, nginx-helper, wp-mail-smtp, redis-cache"
+  echo "Installing and Activating WordPress Plugins = namp, antispam-bee, nginx-helper, wp-mail-smtp, redis-cache"
   echo "================================================================="
   wp --allow-root --path="${APP_DOCROOT}" plugin install amp antispam-bee nginx-helper wp-mail-smtp redis-cache --activate
 
   # Copy object cache file if it exists
   echo "================================================================="
-  echo "Copying Object Cache File... Only if the plguin redis-cache is installed and the file object-cache.php inside the redis-chache plugins' 'includes' folder exists."
+  echo "Copying Object Cache File... Only if the plguin redis-cache is installed and the file object-cache.php inside the redis-chache plugins includes folder exists."
   echo "================================================================="
   if [[ -f ${APP_DOCROOT}/wp-content/plugins/redis-cache/includes/object-cache.php ]]; then
     echo "================================================================="
