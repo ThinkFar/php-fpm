@@ -87,11 +87,11 @@ function wordpress_config() {
   echo "Fetching WordPress salts..."
 
   while [ $retries -lt $MAX_RETRIES ] && [ "$success" = false ]; do
-        # Try to fetch salts using wget if available, otherwise curl
-        if command -v wget &>/dev/null; then
-            wp_salts=$(wget -qO - "$SALT_URL")
-        else
+        # Try to fetch salts using curl if available, otherwise wget
+        if command -v curl &>/dev/null; then
             wp_salts=$(curl -s -f "$SALT_URL")
+        elif command -v wget &>/dev/null; then
+            wp_salts=$(wget -qO - "$SALT_URL")
         fi
 
         if [ $? -eq 0 ] && [ ! -z "$wp_salts" ]; then
@@ -171,6 +171,7 @@ EOF
   # Configure the site with wp-cli
   echo "================================================================="
   echo "Installing WordPress Core..."
+  echo "install.sh - NOT wp-install-script-app.sh"
   echo "================================================================="
   wp --allow-root --path="${APP_DOCROOT}" core install --url="https://${NGINX_SERVER_NAME}" \
     --title="${NGINX_SERVER_NAME}" --admin_user="${WORDPRESS_ADMIN}" \
@@ -197,7 +198,7 @@ EOF
 
   # Install and activate plugins
   echo "================================================================="
-  echo "Installing and Activating WordPress Plugins = namp, antispam-bee, nginx-helper, wp-mail-smtp, redis-cache"
+  echo "Installing and Activating WordPress Plugins - namp, antispam-bee, nginx-helper, wp-mail-smtp, redis-cache"
   echo "================================================================="
   wp --allow-root --path="${APP_DOCROOT}" plugin install amp antispam-bee nginx-helper wp-mail-smtp redis-cache --activate
 
