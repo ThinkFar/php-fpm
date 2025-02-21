@@ -233,7 +233,7 @@ EOF
 #######################################
 function wordpress_ssl() {
   # We need to invoke the page prior to including the SSL connection information
-  curl -v -k "https://${NGINX_SERVER_NAME}/wp-login.php"
+  curl -v -k --resolve "nginx:443:172.19.0.6" "https://nginx/wp-login.php"
 
   # Add SSL connection to config
   sed -i "/\/\* That's all, stop editing! Happy publishing. \*\//i \
